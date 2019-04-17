@@ -4,21 +4,20 @@ import tushare as ts
 import pandas as pd
 import os
 import csv
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import datetime
 import calendar
 
-def stock_nmc():
+def stock_nmc():    
     data = ts.get_today_all().iloc[:,0].tolist()
     data_t = ts.get_terminated().iloc[:,0].tolist()
-    # data_t = ts.get_terminated()
-    # all_stock = data.iloc[:,0].tolist() + data_t.iloc[:,0].tolist()
-    # for code in all_stock:
-    #     df = ts.get_hist_data(code)
-    #     df['ltsz'] = pd.Series.rolling(df['close'],1).sum() * pd.Series.rolling\
-    #         (df['volume'],1).sum() / pd.Series.rolling(df['turnover'],1).sum() / 10000
-    #     df.to_csv(str(code) + '.csv')
-
+    data_t = ts.get_terminated()
+    all_stock = data.iloc[:,0].tolist() + data_t.iloc[:,0].tolist()
+    for code in all_stock:
+        df = ts.get_hist_data(code)
+        df['ltsz'] = pd.Series.rolling(df['close'],1).sum() * pd.Series.rolling\
+            (df['volume'],1).sum() / pd.Series.rolling(df['turnover'],1).sum() / 10000
+        df.to_csv(str(code) + '.csv')
 
 def stock_basic():
     data = ts.get_stock_basics()
@@ -64,7 +63,10 @@ def all_data():
 def houfuquan(code):
     dg = ts.get_k_data(code, autype='hfq')
     dg.to_csv(code + '.csv')
-    # print(dg)
+    # draw the picture
+    plt.figure(figsize=(10, 6))
+    plt.plot(dg['date'], dg['close'])
+    plt.show()    
 
 def qianfuquan(code):
     df = ts.get_k_data(code, autype='qfq')
@@ -82,8 +84,6 @@ def sina(code, date):
 def parse_file(name):
     output = pd.DataFrame(columns=('rate','code','current','before'))
     r_data = pd.read_csv(name)
-    # print(str((r_data.iloc[-1]['close'] - r_data.iloc[0]['close']) / r_data.iloc[0]['close']))
-    # cal = (r_data.iloc[-1]['close'] - r_data.iloc[0]['close']) / r_data.iloc[0]['close']
     output['code'] = [r_data.iloc[0]['code']]
     output['rate'] = [(r_data.iloc[-1]['close'] - r_data.iloc[0]['close']) / r_data.iloc[0]['close']]
     output['current'] = [r_data.iloc[-1]['close']]
@@ -96,8 +96,8 @@ def parse_file(name):
         pass
 
 if __name__ == '__main__':
-    # houfuquan('300698')
+    houfuquan('300698')
     # sina('300131', '2019-04-15')
-    all_data()
+    # all_data()
     # stock_nmc()
     # parse_file('300698.csv')
