@@ -8,6 +8,18 @@ import matplotlib.pyplot as plt
 import datetime
 import calendar
 
+NMC_limit = 250000
+MKTCAP_limit = 1000000
+TURNOVER_limit = 5.0
+NMCMKTRATIO_limit = 0.6
+
+def get_top(date):
+    ts.top_list(date).to_csv('top.csv', encoding='GBK')
+
+def get_info(code):
+    data = ts.get_notices(code)
+    data.to_csv('info.csv', encoding='GBK')
+
 def stock_nmc():    
     data = ts.get_today_all().iloc[:,0].tolist()
     data_t = ts.get_terminated().iloc[:,0].tolist()
@@ -21,7 +33,8 @@ def stock_nmc():
 
 def stock_basic():
     data = ts.get_stock_basics()
-    data.to_csv('basic.csv')
+    data = data[~data.name.str.contains('ST')]
+    data.to_csv('basic.csv', encoding='GBK')
 
 def all_data():    
     result_diagram = pd.DataFrame()
@@ -31,10 +44,10 @@ def all_data():
     data.to_csv('origin.csv', encoding='GBK') # including all 
     # get small nmc data array
     for i in data.index:
-        if data.ix[i]['nmc'] < 200000 and data.ix[i]['mktcap'] < 400000 and data.ix[i]['volume'] > 0:
-            if data.ix[i]['turnoverratio'] < 2.6:
-                result_diagram = result_diagram.append(data.ix[i], ignore_index=True)
-    result_diagram.to_csv('test.csv', encoding='GBK', header=True)
+        if data.ix[i]['nmc'] < NMC_limit and data.ix[i]['mktcap'] < MKTCAP_limit and data.ix[i]['volume'] > 0:
+            if data.ix[i]['nmc'] / data.ix[i]['mktcap'] > NMCMKTRATIO_limit and data.ix[i]['turnoverratio'] < TURNOVER_limit:
+                    result_diagram = result_diagram.append(data.ix[i], ignore_index=True)
+    result_diagram.to_csv('pickup.csv', encoding='GBK', header=True)
   
     # w_data = pd.read_csv('test.csv')
     # output = pd.DataFrame(columns=('rate','code'))
@@ -64,9 +77,9 @@ def houfuquan(code):
     dg = ts.get_k_data(code, autype='hfq')
     dg.to_csv(code + '.csv')
     # draw the picture
-    plt.figure(figsize=(10, 6))
-    plt.plot(dg['date'], dg['close'])
-    plt.show()    
+    # plt.figure(figsize=(8, 6))
+    # plt.plot(dg['date'], dg['close'])
+    # plt.show()    
 
 def qianfuquan(code):
     df = ts.get_k_data(code, autype='qfq')
@@ -95,9 +108,20 @@ def parse_file(name):
         output.to_csv('output.csv', header=True)               
         pass
 
+def get_main():
+    ts.get_index().to_csv('main.csv', encoding='GBK')
+
+def get_cap_tops(day):
+    ts.cap_tops(days=day).to_csv('top.csv', encoding='GBK')
+
 if __name__ == '__main__':
-    houfuquan('300698')
+    get_main()
+    # get_cap_tops(10)
+    # get_top('2019-04-17')
+    # get_info('300573')
+    # stock_basic()
     # sina('300131', '2019-04-15')
-    # all_data()
+    all_data()
     # stock_nmc()
-    # parse_file('300698.csv')
+    # houfuquan('300131')
+    # parse_file('300131.csv')
